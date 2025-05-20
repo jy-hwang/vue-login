@@ -1,8 +1,6 @@
 <template>
   <div class="app">
-    <div v-if="state.account.mid">
-      안녕하세요? {{ state.account.memberName }}님!
-    </div>
+    <div v-if="state.account.id">안녕하세요? {{ state.account.name }}님!</div>
     <div v-else>
       <label for="loginId">
         <span>아이디</span>
@@ -30,8 +28,8 @@ export default {
   setup() {
     const state = reactive({
       account: {
-        mid: null,
-        memberNamer: "",
+        id: null,
+        name: "",
       },
       form: {
         loginId: "",
@@ -44,9 +42,17 @@ export default {
         loginId: state.form.loginId,
         loginPw: state.form.loginPw,
       };
-      axios.post("/api/account", args).then((res) => {
-        state.account = res.data;
-      });
+      axios
+        .post("/api/account", args)
+        .then((res) => {
+          alert("로그인에 성공했습니다.");
+          console.log(res);
+          state.account = res.data;
+          console.log(state.account);
+        })
+        .catch(() => {
+          alert("로그인에 실패했습니다.\n계정정보를 확인해주세요.");
+        });
     };
 
     axios.get("/api/account").then((res) => {
