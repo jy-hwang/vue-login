@@ -3,9 +3,12 @@ const app = express();
 const port = 3000;
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
+require("dotenv").config();
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
+
+const jwt = require("jsonwebtoken");
 
 const members = [
   {
@@ -23,15 +26,20 @@ const members = [
 ];
 
 app.get("/api/account", (req, res) => {
-  console.log(req.cookies);
-  if (req.cookies && req.cookies.account) {
-    const member = JSON.parse(req.cookies.account);
-
-    if (member.id) {
-      return res.send(member);
-    }
+  if (req.cookies && req.cookies.token) {
+    jwt.verify(
+      req.cookies.token,
+      process.env.JWT_SECRET_KEY,
+      (err, decoded) => {
+        if (err) {
+          return res.sendStatus(401);
+        }
+        res.send(decoded);
+      }
+    );
+  } else {
+    res.sendStatus(401);
   }
-  res.send(401);
 });
 
 app.post("/api/account", (req, res) => {
@@ -48,8 +56,24 @@ app.post("/api/account", (req, res) => {
       path: "/",
       httpOnly: true,
     };
-    res.cookie("account", JSON.stringify(member), options);
-    res.send(member);
+
+    const loginToken = jwt.sign(
+      {
+        id: member.id,
+        name: member.name,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES,
+        issuer: process.env.JWT_ISSUER,
+      }
+    );
+    res.cookie("token", loginToken, options);
+    const loginMember = {
+      id: member.id,
+      name: member.name,
+    };
+    res.send(loginMember);
   } else {
     res.status(401).send("계정정보를 찾을 수 없습니다.");
   }
