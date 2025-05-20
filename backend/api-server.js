@@ -38,7 +38,7 @@ app.get("/api/account", (req, res) => {
       }
     );
   } else {
-    res.sendStatus(401);
+    return;
   }
 });
 
@@ -77,8 +77,13 @@ app.post("/api/account", (req, res) => {
   } else {
     res.status(401).send("계정정보를 찾을 수 없습니다.");
   }
+});
 
-  console.log(loginId, loginPw);
+app.delete("/api/account", (req, res) => {
+  if (req.cookies && req.cookies.token) {
+    res.clearCookie("token");
+  }
+  res.sendStatus(200);
 });
 
 app.listen(port, () => {

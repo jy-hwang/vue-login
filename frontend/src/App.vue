@@ -1,6 +1,9 @@
 <template>
   <div class="app">
-    <div v-if="state.account.id">안녕하세요? {{ state.account.name }}님!</div>
+    <div v-if="state.account.id">
+      <p>안녕하세요? {{ state.account.name }}님!</p>
+      <button @click="logout()">로그아웃</button>
+    </div>
     <div v-else>
       <label for="loginId">
         <span>아이디</span>
@@ -46,20 +49,33 @@ export default {
         .post("/api/account", args)
         .then((res) => {
           alert("로그인에 성공했습니다.");
-          console.log(res);
           state.account = res.data;
-          console.log(state.account);
         })
         .catch(() => {
           alert("로그인에 실패했습니다.\n계정정보를 확인해주세요.");
         });
     };
 
-    axios.get("/api/account").then((res) => {
-      state.account = res.data;
-    });
+    const logout = () => {
+      axios.delete("/api/account").then(() => {
+        alert("로그아웃 했습니다.");
+        state.account.id = null;
+        state.account.name = "";
+        state.form.loginId = "";
+        state.form.loginPw = "";
+      });
+    };
 
-    return { state, submit };
+    axios
+      .get("/api/account")
+      .then((res) => {
+        state.account = res.data;
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+
+    return { state, submit, logout };
   },
 };
 </script>
